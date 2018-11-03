@@ -40,6 +40,17 @@ http('GET', chrome.runtime.getURL('config.json'), '', function (obj) {
   document.dispatchEvent(new Event('config-loaded'));
 });
 
+// translate makes a Cloud Natural Language API request with the API key
+var translate = function(text, cb) {
+  var url = 'https://translation.googleapis.com/language/translate/v2?key=' + API_KEY;
+  var data = {
+      q: text,
+      target: 'zh',
+      format: 'text'
+  };
+  http('POST', url, JSON.stringify(data), cb);
+};
+
 // detect makes a Cloud Vision API request with the API key.
 var detect = function (type, b64data, cb) {
   var url = 'https://vision.googleapis.com/v1/images:annotate?key=' + API_KEY;
@@ -97,7 +108,7 @@ var copyToClipboard = function (text) {
 };
 
 chrome.contextMenus.create({
-  title: 'Text detection',
+  title: 'Image Text Translation',
   contexts: ['image'],
   onclick: function (obj) {
     b64(obj.srcUrl, function (b64data) {
@@ -109,11 +120,21 @@ chrome.contextMenus.create({
           return;
         }
 
-        if (copyToClipboard(text)) {
-          notify('Text copied to clipboard', text);
-        } else {
-          notify('Failed to copy to clipboard');
-        }
+        translate (text, function(data){
+          //notify(text)
+          //notify(JSON.stringify(data))
+          //copyToClipboard(JSON.stringify(data))
+          text = ((data.translations || [{}])[0]).translatedText || '';
+          if (text === '') {
+            notify('No text found 2');
+            return;
+          }
+          if (copyToClipboard(JSON.stringify(data))) {
+            notify('Text copied to clipboard', text2);
+          } else {
+            notify('Failed to copy to clipboard');
+          }
+        });
       });
     });
   }
