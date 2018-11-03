@@ -2,21 +2,6 @@ var API_KEY = '';
 var MAX_LABELS = 4; // Only show the top few labels for an image.
 var LINE_COLOR = '#f3f315';
 
-chrome.runtime.onInstalled.addListener(function() {
-  chrome.storage.sync.set({color: '#3aa757'}, function() {
-    console.log("The color is green.");
-  });
-  chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
-    chrome.declarativeContent.onPageChanged.addRules([{
-      conditions: [new chrome.declarativeContent.PageStateMatcher({
-        pageUrl: {hostEquals: '<all_urls>'},
-      })
-      ],
-          actions: [new chrome.declarativeContent.ShowPageAction()]
-    }]);
-  });
-});
-
 // http makes an HTTP request and calls callback with parsed JSON.
 var http = function (method, url, body, cb) {
   var xhr = new XMLHttpRequest();
@@ -43,12 +28,15 @@ http('GET', chrome.runtime.getURL('config.json'), '', function (obj) {
 // translate makes a Cloud Natural Language API request with the API key
 var translate = function(text, cb) {
   var url = 'https://translation.googleapis.com/language/translate/v2?key=' + API_KEY;
-  var data = {
-      q: text,
-      target: 'zh',
-      format: 'text'
-  };
-  http('POST', url, JSON.stringify(data), cb);
+  chrome.storage.sync.get('to', function(data){
+    copyToClipboard(data.to);
+    var data = {
+        q: text,
+        target: data.to,
+        format: 'text'
+    };
+    http('POST', url, JSON.stringify(data), cb);
+  });
 };
 
 // detect makes a Cloud Vision API request with the API key.
@@ -131,6 +119,7 @@ chrome.contextMenus.create({
             notify('No text found');
             return;
           }
+          
           if (copyToClipboard(text)) {
             notify('Text copied to clipboard', text);
           } else {
