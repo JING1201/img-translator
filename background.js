@@ -110,21 +110,25 @@ var copyToClipboard = function (text) {
 chrome.contextMenus.create({
   title: 'Image Text Translation',
   contexts: ['image'],
-  onclick: function (obj) {
-    b64(obj.srcUrl, function (b64data) {
-      detect('TEXT_DETECTION', b64data, function (data) {
-        copyToClipboard(JSON.stringify(data))
+  onclick: function (obj, tab) {
+    chrome.tabs.sendMessage(tab.id, "getClickedEl", function(clickedEl) {
+      copyToClipboard(JSON.stringify(clickedEl));
+    });
+    b64(obj.srcUrl, function (b64data, obj) {
+      detect('TEXT_DETECTION', b64data, function (data, obj) {
+        
         // Get 'description' from first 'textAnnotation' of first 'response', if present.
         var text = (((data.responses || [{}])[0]).textAnnotations || [{}])[0].description || '';
         if (text === '') {
           notify('No text found');
           return;
         }
+        var position = ((((data.responses || [{}])[0]).textAnnotations || [{}])[0].boundingPoly || [{}]).vertices || '';
 
-        translate (text, function(data){
+        translate (text, function(data, position, obj){
           text = (((data.data || [{}]).translations || [{}])[0]).translatedText || '';
           if (text === '') {
-            notify('No text found 2');
+            notify('No text found');
             return;
           }
           if (copyToClipboard(text)) {
@@ -132,6 +136,9 @@ chrome.contextMenus.create({
           } else {
             notify('Failed to copy to clipboard');
           }
+
+          //create text overlay
+
         });
       });
     });
