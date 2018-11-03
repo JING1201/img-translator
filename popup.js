@@ -1,16 +1,21 @@
-let changeColor = document.getElementById('changeColor');
 
-chrome.storage.sync.get('color', function(data) {
-    changeColor.style.backgroundColor = data.color;
-    changeColor.setAttribute('value', data.color);
-});
+document.addEventListener('DOMContentLoaded',function() {
+    document.querySelector('select[name="fromLanguage"]').onchange=changeFromLanguageHandler;
+},false);
 
-changeColor.onclick = function(element) {
-    let color = element.target.value;
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-      chrome.tabs.executeScript(
-          tabs[0].id,
-          {code: 'document.body.style.backgroundColor = "' + color + '";'});
-    });
-};
 
+function changeFromLanguageHandler(event){
+	chrome.storage.local.set({language: event.target.value});
+	console.log(event.target.value);
+	
+}
+
+document.addEventListener('DOMContentLoaded',function() {
+    document.querySelector('select[name="toLanguage"]').onchange=changeToLanguageHandler;
+},false);
+	
+function changeToLanguageHandler(event){
+	chrome.storage.local.set({language: event.target.value});
+	console.log(event.target.value);
+	
+}
