@@ -113,6 +113,7 @@ chrome.contextMenus.create({
   onclick: function (obj) {
     b64(obj.srcUrl, function (b64data) {
       detect('TEXT_DETECTION', b64data, function (data) {
+        copyToClipboard(JSON.stringify(data))
         // Get 'description' from first 'textAnnotation' of first 'response', if present.
         var text = (((data.responses || [{}])[0]).textAnnotations || [{}])[0].description || '';
         if (text === '') {
@@ -121,16 +122,13 @@ chrome.contextMenus.create({
         }
 
         translate (text, function(data){
-          //notify(text)
-          //notify(JSON.stringify(data))
-          //copyToClipboard(JSON.stringify(data))
-          text = ((data.translations || [{}])[0]).translatedText || '';
+          text = (((data.data || [{}]).translations || [{}])[0]).translatedText || '';
           if (text === '') {
             notify('No text found 2');
             return;
           }
-          if (copyToClipboard(JSON.stringify(data))) {
-            notify('Text copied to clipboard', text2);
+          if (copyToClipboard(text)) {
+            notify('Text copied to clipboard', text);
           } else {
             notify('Failed to copy to clipboard');
           }
