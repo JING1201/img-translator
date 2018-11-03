@@ -1,0 +1,32 @@
+{
+    "manifest_version": 2,
+    "name": "Image Translator",
+    "description": "Adds a right-click menu item to images to detect and translate text",
+    "version": "1.0",
+    "permissions": [
+      "clipboardWrite",
+      "contextMenus",
+      "notifications",
+      "file://*",
+      "<all_urls>",
+      "storage",
+      "declarativeContent",
+      "activeTab"
+    ],
+    "background": {
+      "scripts": ["background.js"]
+    },
+    "page_action": {
+        "default_popup": "popup.html",
+        "default_icon": {
+            "16": "images/get_started16.png",
+            "32": "images/get_started32.png",
+            "48": "images/get_started48.png",
+            "128": "images/get_started128.png"
+        }
+    },
+    "icons": {
+      "16": "images/get_started16.png",
+      "128": "images/get_started128.png"
+    }
+}
