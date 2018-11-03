@@ -112,10 +112,10 @@ chrome.contextMenus.create({
   contexts: ['image'],
   onclick: function (obj, tab) {
     chrome.tabs.sendMessage(tab.id, "getClickedEl", function(clickedEl) {
-      copyToClipboard(JSON.stringify(clickedEl));
+      copyToClipboard(clickedEl);
     });
-    b64(obj.srcUrl, function (b64data, obj) {
-      detect('TEXT_DETECTION', b64data, function (data, obj) {
+    b64(obj.srcUrl, function (b64data, clickedEl) {
+      detect('TEXT_DETECTION', b64data, function (data, clickedEl) {
         
         // Get 'description' from first 'textAnnotation' of first 'response', if present.
         var text = (((data.responses || [{}])[0]).textAnnotations || [{}])[0].description || '';
@@ -125,7 +125,7 @@ chrome.contextMenus.create({
         }
         var position = ((((data.responses || [{}])[0]).textAnnotations || [{}])[0].boundingPoly || [{}]).vertices || '';
 
-        translate (text, function(data, position, obj){
+        translate (text, function(data, position, clickedEl){
           text = (((data.data || [{}]).translations || [{}])[0]).translatedText || '';
           if (text === '') {
             notify('No text found');
