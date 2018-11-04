@@ -17,21 +17,34 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     else{
         var trans = request[0];
         var pos = request[1]
+        var sentences = trans.split("\n");
         var textnode = document.createTextNode(trans);  // Create a text node
         clickedEl.parentElement.appendChild(textnode); 
         var positions = (((JSON.parse(pos).responses || [{}])[0]).textAnnotations || [{}]);
 
         var rect = clickedEl.getBoundingClientRect();
 
-        console.log(trans);
+        var text = (((JSON.parse(pos).responses || [{}])[0]).textAnnotations || [{}])[0].description || '';
+        var splits = text.split("\n");
+        var counts = [];
+        for(var i = 0; i < splits.length; i++)
+        {
+            var words = splits[i].split(" ");
+            if(i == 0)
+                counts.push(words.length - 1);
+            else
+                counts.push(words.length - 1 + counts[i - 1]);
+        }
 
-        var sentences = trans.split("\n");
+        console.log(counts);
+
+        console.log(positions);
 
         console.log(rect.top,rect.right,rect.bottom,rect.left);
 
-        for(var i = 1; i <= sentences.length; i++)
+        for(var i = 1; i <= sentences.length - 1; i++)
         {
-            var vertz = (positions[i].boundingPoly || [{}]).vertices || "{x: 11, y: 11}";
+            var vertz = (positions[i + counts[i - 1]].boundingPoly || [{}]).vertices || "{x: 11, y: 11}";
             var div = document.createElement("div");
             /*div.style.width = (vertz[1].x -vertz[0].x) + "px";
             div.style.height = (vertz[0].y -vertz[1].y) + "px";*/
