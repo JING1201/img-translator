@@ -42,14 +42,18 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
         console.log(rect.top,rect.right,rect.bottom,rect.left);
 
-        for(var i = 1; i <= sentences.length - 1; i++)
+        //create divs
+        for(var i = 1; i < sentences.length; i++)
         {
-            var vertz = (positions[i + counts[i - 1]].boundingPoly || [{}]).vertices || "{x: 11, y: 11}";
+            if(i == 1)
+                var vertz = (positions[1].boundingPoly || [{}]).vertices || "{x: 11, y: 11}";
+            else
+                var vertz = (positions[i + counts[i - 2]].boundingPoly || [{}]).vertices || "{x: 11, y: 11}";
             var div = document.createElement("div");
             /*div.style.width = (vertz[1].x -vertz[0].x) + "px";
             div.style.height = (vertz[0].y -vertz[1].y) + "px";*/
             div.style.top = rect.top + vertz[1].y;
-            div.style.right = rect.right - vertz[1].x;
+            div.style.left = rect.left + vertz[0].x;
             div.style.position = "absolute";
             div.style.backgroundColor = "#000000";
             div.style.color = "white";
