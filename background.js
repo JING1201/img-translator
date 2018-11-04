@@ -1,6 +1,10 @@
 var API_KEY = '';
 var MAX_LABELS = 4; // Only show the top few labels for an image.
 var LINE_COLOR = '#f3f315';
+var saved;
+var translatedText;
+var translatedPos;
+var req;
 
 // http makes an HTTP request and calls callback with parsed JSON.
 var http = function (method, url, body, cb) {
@@ -28,15 +32,12 @@ http('GET', chrome.runtime.getURL('config.json'), '', function (obj) {
 // translate makes a Cloud Natural Language API request with the API key
 var translate = function(text, cb) {
   var url = 'https://translation.googleapis.com/language/translate/v2?key=' + API_KEY;
-  chrome.storage.sync.get('to', function(data){
-    copyToClipboard(data.to);
-    var data = {
-        q: text,
-        target: data.to,
-        format: 'text'
-    };
-    http('POST', url, JSON.stringify(data), cb);
-  });
+  var data = {
+      q: text,
+      target: 'zh',
+      format: 'text'
+  };
+  http('POST', url, JSON.stringify(data), cb);
 };
 
 // detect makes a Cloud Vision API request with the API key.
@@ -100,36 +101,41 @@ chrome.contextMenus.create({
   contexts: ['image'],
   onclick: function (obj, tab) {
     chrome.tabs.sendMessage(tab.id, "getClickedEl", function(clickedEl) {
+      saved = "123";
       copyToClipboard(clickedEl);
-    });
-    b64(obj.srcUrl, function (b64data, clickedEl) {
-      detect('TEXT_DETECTION', b64data, function (data, clickedEl) {
-        
-        // Get 'description' from first 'textAnnotation' of first 'response', if present.
-        var text = (((data.responses || [{}])[0]).textAnnotations || [{}])[0].description || '';
-        if (text === '') {
-          notify('No text found');
-          return;
-        }
-        var position = ((((data.responses || [{}])[0]).textAnnotations || [{}])[0].boundingPoly || [{}]).vertices || '';
 
-        translate (text, function(data, position, clickedEl){
-          text = (((data.data || [{}]).translations || [{}])[0]).translatedText || '';
+      b64(obj.srcUrl, function (b64data) {
+        detect('TEXT_DETECTION', b64data, function (data) {
+          
+          // Get 'description' from first 'textAnnotation' of first 'response', if present.
+          var text = (((data.responses || [{}])[0]).textAnnotations || [{}])[0].description || '';
           if (text === '') {
             notify('No text found');
             return;
           }
-          
-          if (copyToClipboard(text)) {
-            notify('Text copied to clipboard', text);
-          } else {
-            notify('Failed to copy to clipboard');
-          }
+          copyToClipboard(JSON.stringify(data));
+          translatedPos = JSON.stringify(data);
 
-          //create text overlay
+          translate (text, function(data, position){
+            text = (((data.data || [{}]).translations || [{}])[0]).translatedText || '{x: 13, y: 13}';
+            if (text === '') {
+              notify('No text found');
+              return;
+            }
 
+            /*if (copyToClipboard(text)) {
+              notify('Text copied to clipboard', text);
+            } else {
+              notify('Failed to copy to clipboard');
+            }*/
+            //create text overlay
+            translatedText = text;
+            var results = [translatedText, translatedPos];
+            chrome.tabs.sendMessage(tab.id, results);
+          });
         });
       });
+
     });
   }
 }, function () {
@@ -137,5 +143,8 @@ chrome.contextMenus.create({
     console.log('contextMenus.create: ', chrome.extension.lastError.message);
   }
 });
+
+
+console.log("backgoundjs end of file");
 
 
