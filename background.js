@@ -125,7 +125,7 @@ chrome.contextMenus.create({
           return;
         }
         var position = ((((data.responses || [{}])[0]).textAnnotations || [{}])[0].boundingPoly || [{}]).vertices || '';
-
+        //copyToClipboard(JSON.stringify(data));
         translate (text, function(data, position, clickedEl){
           text = (((data.data || [{}]).translations || [{}])[0]).translatedText || '';
           if (text === '') {
