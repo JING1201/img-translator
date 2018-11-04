@@ -57,6 +57,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
             div.style.position = "absolute";
             div.style.backgroundColor = "#000000";
             div.style.color = "white";
+            div.style.fontSize="large";
             div.innerHTML = sentences[i-1];
             clickedEl.parentElement.appendChild(div); 
             console.log(trans);
