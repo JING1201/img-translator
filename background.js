@@ -23,13 +23,26 @@ var http = function (method, url, body, cb) {
 http('GET', chrome.runtime.getURL('config.json'), '', function (obj) {
   API_KEY = obj.key;
   document.dispatchEvent(new Event('config-loaded'));
+  var url = "https://translation.googleapis.com/language/translate/v2/languages?target="+ navigator.language + "&key=" + API_KEY;
+  http('GET', url, '', function (data) {
+    languages = JSON.stringify((data.data || [{}]).languages);
+    //copyToClipboard(languages);
+    var languageList = [];
+    var parsed = JSON.parse(languages);
+    for (var i=0; i < parsed.length; i++) {
+      var language = [parsed[i].language, parsed[i].name];
+      languageList.push(language);
+    }
+    //copyToClipboard(languageList);
+    chrome.storage.sync.set({supportedLanguages: languageList});
+  });
 });
 
 // translate makes a Cloud Natural Language API request with the API key
 var translate = function(text, cb) {
   var url = 'https://translation.googleapis.com/language/translate/v2?key=' + API_KEY;
   chrome.storage.sync.get('to', function(data){
-    copyToClipboard(data.to);
+    //copyToClipboard(data.to);
     var data = {
         q: text,
         target: data.to,
